@@ -1,6 +1,6 @@
 # DNA Career — Web App
 
-Next.js 14 + Supabase + Claude API. Đã build thành công và test chạy local (landing, test flow, admin) trong môi trường phát triển — chỉ còn 2 bước bạn cần tự làm vì cần tài khoản riêng: **tạo Supabase project** và **deploy lên Vercel**.
+Next.js 14 + Supabase + Gemini API (Google). Đã build thành công và test chạy local (landing, test flow, admin) trong môi trường phát triển — chỉ còn 2 bước bạn cần tự làm vì cần tài khoản riêng: **tạo Supabase project** và **deploy lên Vercel**.
 
 ## 1. Cấu trúc dự án
 
@@ -22,7 +22,7 @@ src/
       archetypes.ts      → Thư viện 8 DNA Type (Layer 5a)
       layer1_2.ts        → Layer 1 (chấm câu) + Layer 2 (hành vi)
       layer3_4.ts        → Layer 3 (mâu thuẫn) + Layer 4 (độ tin cậy)
-      layer5.ts          → Layer 5a (phân loại) + Layer 5b (gọi Claude API)
+      layer5.ts          → Layer 5a (phân loại) + Layer 5b (gọi Gemini API)
       pipeline.ts         → Chạy toàn bộ 5 layer
     supabase.ts          → Supabase client (server-side)
 supabase/schema.sql      → Chạy 1 lần trong Supabase SQL Editor
@@ -41,7 +41,7 @@ Copy `.env.example` thành `.env.local` và điền:
 ```
 NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=...          # từ bước 2
-ANTHROPIC_API_KEY=sk-ant-...           # console.anthropic.com > API Keys
+GEMINI_API_KEY=AIzaSy...                # aistudio.google.com/app/apikey (miễn phí, không cần thẻ)
 ADMIN_SECRET=chon-1-mat-khau-bat-ky    # để bảo vệ trang /admin
 ```
 
@@ -83,4 +83,4 @@ Mở `http://localhost:3000` — landing page → `/test` để làm thử 40 c�
 
 - Supabase free tier: đủ dùng đến ~500MB dữ liệu / 50k requests tháng — miễn phí ở giai đoạn đầu
 - Vercel free tier: đủ dùng cho traffic vừa phải
-- Claude API: chỉ gọi 1 lần/người dùng ở Layer 5b (~2000 tokens output) — chi phí trên mỗi user rất thấp, đúng như thiết kế kiến trúc 5-layer đã nêu ở Chương 5
+- Gemini API: free tier ~1.500 request/ngày, chỉ gọi 1 lần/người dùng ở Layer 5b — quá dư cho giai đoạn đầu, không tốn phí
