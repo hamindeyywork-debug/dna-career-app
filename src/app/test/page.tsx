@@ -23,7 +23,7 @@ export default function TestPage() {
   const questionStartRef = useRef<number>(Date.now());
 
   const question = QUESTIONS[index];
-  const progressPct = Math.round((index / QUESTIONS.length) * 100);
+  const answeredCount = index;
 
   function startTest() {
     setStage("question");
@@ -45,9 +45,9 @@ export default function TestPage() {
   }
 
   async function submitAnswers(finalAnswers: typeof answers) {
-    let msgTimer = setInterval(() => {
+    const msgTimer = setInterval(() => {
       setLoadingMsgIndex((i) => Math.min(i + 1, LOADING_MESSAGES.length - 1));
-    }, 2000);
+    }, 2200);
 
     try {
       const res = await fetch("/api/submit", {
@@ -75,16 +75,19 @@ export default function TestPage() {
   if (stage === "intro") {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-        <div className="text-4xl mb-4">⏱️</div>
-        <h2 className="text-xl font-bold mb-4">Trước khi bắt đầu</h2>
-        <ul className="text-ink/70 space-y-2 max-w-sm">
-          <li>Không có đáp án đúng hay sai</li>
-          <li>Trả lời theo bản năng, đừng suy nghĩ quá lâu</li>
-          <li>Kết quả được cá nhân hóa hoàn toàn theo bạn</li>
-        </ul>
+        <span className="font-mono text-xs tracking-[0.25em] text-rose uppercase mb-6">
+          Trước khi bắt đầu
+        </span>
+        <h2 className="font-display text-2xl md:text-3xl font-semibold mb-6 max-w-sm leading-snug">
+          Không có đáp án đúng hay sai
+        </h2>
+        <p className="text-ink/65 max-w-sm text-sm mb-10 leading-relaxed">
+          Cứ trả lời theo bản năng đầu tiên của bạn, đừng nghĩ quá lâu — kết
+          quả sẽ tự nhiên đúng là của riêng bạn.
+        </p>
         <button
           onClick={startTest}
-          className="mt-8 bg-coral text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:opacity-90 transition"
+          className="bg-ink text-canvas font-medium px-9 py-4 rounded-full hover:bg-rose transition-colors duration-300"
         >
           Bắt đầu ngay
         </button>
@@ -95,8 +98,14 @@ export default function TestPage() {
   if (stage === "loading") {
     return (
       <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
-        <div className="w-28 h-28 rounded-full bg-gradient-to-br from-blush to-coral animate-spin-slow mb-8" />
-        <p className="text-ink/70">{LOADING_MESSAGES[loadingMsgIndex]}</p>
+        <div className="relative w-24 h-24 mb-10">
+          <div className="absolute inset-0 rounded-full border-2 border-line" />
+          <div className="absolute inset-0 rounded-full border-2 border-t-rose border-r-transparent border-b-transparent border-l-transparent animate-helix" />
+          <div className="absolute inset-0 flex items-center justify-center font-mono text-[10px] text-ink/40">
+            DNA
+          </div>
+        </div>
+        <p className="font-mono text-sm text-ink/60">{LOADING_MESSAGES[loadingMsgIndex]}</p>
       </main>
     );
   }
@@ -104,23 +113,30 @@ export default function TestPage() {
   return (
     <main className="min-h-screen flex flex-col px-6 py-10">
       <div className="w-full max-w-lg mx-auto">
+        {/* Progress: chuỗi gen — mỗi node ứng 1 câu, sáng dần khi trả lời */}
         <div className="flex items-center gap-3 mb-10">
-          <div className="flex-1 h-1.5 bg-blush/40 rounded-full overflow-hidden">
-            <div className="h-full bg-coral transition-all" style={{ width: `${progressPct}%` }} />
+          <div className="gene-thread flex-1">
+            {QUESTIONS.map((_, i) => (
+              <div key={i} className="flex-1">
+                <div className={`gene-node ${i <= answeredCount ? "active" : ""}`} style={{ width: "100%", height: "3px", borderRadius: "2px" }} />
+              </div>
+            ))}
           </div>
-          <span className="text-xs text-ink/50 whitespace-nowrap">
-            Câu {index + 1}/{QUESTIONS.length}
+          <span className="font-mono text-xs text-ink/40 whitespace-nowrap">
+            {index + 1}/{QUESTIONS.length}
           </span>
         </div>
 
-        <p className="text-lg font-medium mb-8 leading-relaxed">{question.situation}</p>
+        <p className="font-display text-xl md:text-2xl font-medium mb-8 leading-relaxed animate-fade-up" key={question.id}>
+          {question.situation}
+        </p>
 
         <div className="space-y-3">
           {question.choices.map((choice, i) => (
             <button
               key={i}
               onClick={() => selectChoice(i as 0 | 1 | 2 | 3)}
-              className="w-full text-left bg-white border border-blush/60 rounded-2xl px-5 py-4 hover:border-coral hover:bg-blush/10 transition"
+              className="w-full text-left bg-white border border-line rounded-2xl px-5 py-4 hover:border-rose hover:bg-rose-soft/20 transition-colors duration-200"
             >
               {choice.text}
             </button>

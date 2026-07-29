@@ -117,14 +117,34 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
   });
 
   const rawText = response.text ?? "{}";
-  const cleaned = rawText.replace(/```json|```/g, "").trim();
+  let cleaned = rawText.replace(/```json|```/g, "").trim();
+
+  // Trích đúng khối {...} đầu tiên tới cuối cùng, phòng trường hợp model
+  // thêm text thừa trước/sau JSON dù đã ép responseMimeType
+  const firstBrace = cleaned.indexOf("{");
+  const lastBrace = cleaned.lastIndexOf("}");
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+    cleaned = cleaned.slice(firstBrace, lastBrace + 1);
+  }
 
   try {
-    return JSON.parse(cleaned) as ReportSections;
-  } catch {
-    // Fallback nếu model không trả JSON thuần
+    const parsed = JSON.parse(cleaned) as ReportSections;
+    // Đảm bảo mọi field đều là string, tránh undefined làm vỡ giao diện
     return {
-      summary: rawText,
+      summary: parsed.summary ?? "",
+      topStrengths: parsed.topStrengths ?? "",
+      blindSpots: parsed.blindSpots ?? "",
+      suitableCareers: parsed.suitableCareers ?? "",
+      idealEnvironment: parsed.idealEnvironment ?? "",
+      commonMistakes: parsed.commonMistakes ?? "",
+      ninetyDayPlan: parsed.ninetyDayPlan ?? "",
+    };
+  } catch {
+    // Fallback: KHÔNG BAO GIỜ hiển thị JSON thô ra người dùng —
+    // trả về thông điệp trung tính, an toàn để hiển thị.
+    return {
+      summary:
+        "DNA Career của bạn đã được phân tích xong. Bấm mở khóa để nhận báo cáo đầy đủ từ Hamin nhé.",
       topStrengths: "",
       blindSpots: "",
       suitableCareers: "",

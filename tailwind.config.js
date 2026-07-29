@@ -4,10 +4,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        cream: "#FBF6EE",
-        blush: "#F4CFC9",
-        coral: "#E8837B",
-        ink: "#2B2320",
+        canvas: "#FAF3E7",
+        ink: "#241F1B",
+        rose: { DEFAULT: "#C2485C", deep: "#9C3548", soft: "#EBC9CE" },
+        sage: { DEFAULT: "#5C7A6E", soft: "#D9E3DE" },
+        gold: { DEFAULT: "#C98A3E", soft: "#EEDCC0" },
+        line: "#E5D9C6",
+      },
+      fontFamily: {
+        display: ["var(--font-display)", "serif"],
+        body: ["var(--font-body)", "sans-serif"],
+        mono: ["var(--font-mono)", "monospace"],
       },
     },
   },
