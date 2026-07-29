@@ -1,4 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI } from "@google/genai";
 import { FACTOR_CODES, FACTORS, FactorCode } from "./factors";
 import { FactorMatrix } from "./layer1_2";
 import { ConfidenceResult } from "./layer3_4";
@@ -84,11 +84,11 @@ export async function layer5bGenerateReport(params: {
 }): Promise<ReportSections> {
   const { archetype, vector, contradictions, reliabilityTier } = params;
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
-    throw new Error("Thiếu ANTHROPIC_API_KEY trong biến môi trường.");
+    throw new Error("Thiếu GEMINI_API_KEY trong biến môi trường.");
   }
-  const client = new Anthropic({ apiKey });
+  const client = new GoogleGenAI({ apiKey });
 
   const prompt = `Bạn là chuyên gia career coaching, viết báo cáo DNA Career cho một người dùng nữ 22-32 tuổi tại Việt Nam.
 
@@ -110,14 +110,13 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
   "ninetyDayPlan": "kế hoạch phát triển 90 ngày chia 3 giai đoạn 30 ngày"
 }`;
 
-  const response = await client.messages.create({
-    model: "claude-sonnet-4-5",
-    max_tokens: 2000,
-    messages: [{ role: "user", content: prompt }],
+  const response = await client.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: prompt,
+    config: { maxOutputTokens: 2000 },
   });
 
-  const textBlock = response.content.find((b) => b.type === "text");
-  const rawText = textBlock && "text" in textBlock ? textBlock.text : "{}";
+  const rawText = response.text ?? "{}";
   const cleaned = rawText.replace(/```json|```/g, "").trim();
 
   try {
