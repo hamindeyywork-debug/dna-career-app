@@ -111,7 +111,7 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
 }`;
 
   const response = await client.models.generateContent({
-    model: "gemini-2.5-flash",
+    model: "gemini-3.5-flash",
     contents: prompt,
     config: { maxOutputTokens: 2000 },
   });
