@@ -113,7 +113,7 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
   const response = await client.models.generateContent({
     model: "gemini-3.5-flash",
     contents: prompt,
-    config: { maxOutputTokens: 2000 },
+    config: { maxOutputTokens: 4000, responseMimeType: "application/json" },
   });
 
   const rawText = response.text ?? "{}";
