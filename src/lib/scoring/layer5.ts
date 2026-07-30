@@ -1,4 +1,4 @@
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { FACTOR_CODES, FACTORS, FactorCode } from "./factors";
 import { FactorMatrix } from "./layer1_2";
 import { ConfidenceResult } from "./layer3_4";
@@ -113,7 +113,26 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
   const response = await client.models.generateContent({
     model: "gemini-3.6-flash",
     contents: prompt,
-    config: { maxOutputTokens: 4000, responseMimeType: "application/json" },
+    config: {
+      maxOutputTokens: 4000,
+      responseMimeType: "application/json",
+      responseSchema: {
+        type: Type.OBJECT,
+        properties: {
+          summary: { type: Type.STRING, description: "Đoạn tóm tắt DNA, 3-4 câu, KHÔNG chứa JSON hay ký tự đặc biệt" },
+          topStrengths: { type: Type.STRING, description: "3 điểm mạnh nhất, mỗi điểm 1-2 câu, cách nhau bằng xuống dòng" },
+          blindSpots: { type: Type.STRING, description: "Điểm mù dựa trên mâu thuẫn phát hiện được, 3-4 câu" },
+          suitableCareers: { type: Type.STRING, description: "3 nghề phù hợp kèm lý do ngắn gọn, mỗi nghề 1 dòng" },
+          idealEnvironment: { type: Type.STRING, description: "Môi trường làm việc lý tưởng, 3-4 câu" },
+          commonMistakes: { type: Type.STRING, description: "2-3 sai lầm dễ mắc phải, mỗi sai lầm 1 dòng" },
+          ninetyDayPlan: { type: Type.STRING, description: "Kế hoạch phát triển 90 ngày, chia 3 giai đoạn 30 ngày" },
+        },
+        required: [
+          "summary", "topStrengths", "blindSpots", "suitableCareers",
+          "idealEnvironment", "commonMistakes", "ninetyDayPlan",
+        ],
+      },
+    },
   });
 
   const rawText = response.text ?? "{}";
