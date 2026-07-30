@@ -111,7 +111,7 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
 }`;
 
   const response = await client.models.generateContent({
-    model: "gemini-3.5-flash",
+    model: "gemini-3.6-flash",
     contents: prompt,
     config: { maxOutputTokens: 4000, responseMimeType: "application/json" },
   });
@@ -140,6 +140,8 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
       ninetyDayPlan: parsed.ninetyDayPlan ?? "",
     };
   } catch {
+    // In log để có thể xem trong Vercel > Logs nếu cần debug tiếp
+    console.error("[layer5b] Gemini không trả về JSON hợp lệ. Raw text:", rawText.slice(0, 500));
     // Fallback: KHÔNG BAO GIỜ hiển thị JSON thô ra người dùng —
     // trả về thông điệp trung tính, an toàn để hiển thị.
     return {
