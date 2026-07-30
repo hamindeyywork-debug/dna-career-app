@@ -55,9 +55,11 @@ export default function AdminPage() {
     setError("");
   }
 
-  async function lookup(code: string) {
+  async function lookup(rawCode: string) {
     setDetail(null);
     setCopied(false);
+    // Khoan dung: bỏ khoảng trắng thừa, bỏ tiền tố "DNA " lặp nếu người dùng gõ tay
+    const code = rawCode.trim().replace(/^DNA\s+(?=DNA-)/i, "");
     const res = await fetch(`/api/report/${code}`, { headers: { "x-admin-secret": secret } });
     if (!res.ok) {
       setError("Không tìm thấy mã hoặc sai quyền truy cập.");

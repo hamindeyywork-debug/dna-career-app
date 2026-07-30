@@ -23,17 +23,51 @@ const LOCKED_SECTIONS = [
 ];
 
 const TIKTOK_HANDLE = "hamin139";
+// Chỉ dùng để tạo link mở đúng kênh — không hiển thị dạng chữ ra giao diện
+const ZALO_PHONE = "0793223663";
+const FACEBOOK_ID = "61588946940789";
+
+const ZALO_LINK = `https://zalo.me/${ZALO_PHONE}`;
+const MESSENGER_LINK = `https://m.me/${FACEBOOK_ID}`;
+const TIKTOK_LINK = `https://www.tiktok.com/@${TIKTOK_HANDLE}`;
+
+// Copy có fallback cho các trình duyệt trong app (Zalo/TikTok in-app browser)
+// hay chặn navigator.clipboard
+function copyText(text: string): boolean {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // rơi xuống fallback bên dưới
+  }
+  try {
+    const textarea = document.createElement("textarea");
+    textarea.value = text;
+    textarea.style.position = "fixed";
+    textarea.style.left = "-9999px";
+    document.body.appendChild(textarea);
+    textarea.focus();
+    textarea.select();
+    document.execCommand("copy");
+    document.body.removeChild(textarea);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 export default function ResultView(props: Props) {
   const [popupOpen, setPopupOpen] = useState(false);
-  const [step, setStep] = useState<1 | 2>(1);
-  const [followed, setFollowed] = useState(false);
-  const [contactChannel, setContactChannel] = useState<"zalo" | "messenger">("zalo");
+  const [contactChannel, setContactChannel] = useState<"zalo" | "messenger" | "tiktok">("zalo");
   const [contactValue, setContactValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [isUnlocked, setIsUnlocked] = useState(props.unlocked);
+  const [copied, setCopied] = useState(false);
 
-  const keywordMessage = `DNA ${props.code}`;
+  // Mã đã có sẵn tiền tố "DNA-" rồi (vd. DNA-ESKYBI) — không thêm "DNA " nữa để tránh trùng chữ
+  const keywordMessage = props.code;
 
   async function confirmSend() {
     if (!contactValue.trim()) return;
@@ -53,8 +87,12 @@ export default function ResultView(props: Props) {
     }
   }
 
-  function copyKeyword() {
-    navigator.clipboard?.writeText(keywordMessage);
+  function handleCopy() {
+    const ok = copyText(keywordMessage);
+    if (ok) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   }
 
   return (
@@ -179,7 +217,7 @@ export default function ResultView(props: Props) {
                   url: typeof window !== "undefined" ? window.location.origin : "",
                 });
               } else {
-                copyKeyword();
+                copyText(keywordMessage);
               }
             }}
             className="border border-ink/20 text-ink font-medium px-6 py-3 rounded-full hover:border-rose hover:text-rose transition-colors duration-300"
@@ -189,85 +227,96 @@ export default function ResultView(props: Props) {
         </div>
       </div>
 
-      {/* Follow TikTok Popup */}
+      {/* Popup gộp 1 màn hình — không bắt người dùng quay đi quay lại nhiều bước */}
       {popupOpen && (
-        <div className="fixed inset-0 bg-ink/50 flex items-center justify-center px-6 z-50">
-          <div className="bg-canvas rounded-3xl p-7 max-w-sm w-full border border-line">
-            <p className="font-mono text-xs text-ink/40 mb-5">Bước {step}/2</p>
+        <div className="fixed inset-0 bg-ink/50 flex items-center justify-center px-6 z-50 overflow-y-auto py-10">
+          <div className="bg-canvas rounded-3xl p-7 max-w-sm w-full border border-line my-auto">
+            <h3 className="font-display font-semibold text-xl mb-5">Mở khóa báo cáo đầy đủ</h3>
 
-            {step === 1 && (
-              <>
-                <h3 className="font-display font-semibold text-xl mb-2">Follow để mở khóa</h3>
-                <p className="text-sm text-ink/60 mb-6">
-                  Follow @{TIKTOK_HANDLE} trên TikTok — chỉ mất 10 giây.
-                </p>
+            {/* Việc 1: Follow */}
+            <div className="mb-5">
+              <p className="font-mono text-[11px] text-ink/35 uppercase tracking-wide mb-2">Việc 1 · Follow TikTok</p>
+              <a
+                href={TIKTOK_LINK}
+                target="_blank"
+                rel="noreferrer"
+                className="block text-center bg-ink text-canvas font-medium px-6 py-3.5 rounded-full"
+              >
+                Follow @{TIKTOK_HANDLE}
+              </a>
+            </div>
+
+            {/* Việc 2: Copy mã + gửi qua kênh bất kỳ */}
+            <div className="mb-5">
+              <p className="font-mono text-[11px] text-ink/35 uppercase tracking-wide mb-2">Việc 2 · Gửi mã cho Hamin</p>
+
+              <button
+                onClick={handleCopy}
+                className="w-full bg-white rounded-xl px-4 py-3 mb-3 flex items-center justify-between border border-line active:border-rose"
+              >
+                <code className="font-mono text-sm">{keywordMessage}</code>
+                <span className="font-mono text-xs text-rose font-medium whitespace-nowrap ml-2">
+                  {copied ? "Đã copy ✓" : "Bấm để copy"}
+                </span>
+              </button>
+
+              <div className="grid grid-cols-3 gap-2">
                 <a
-                  href={`https://www.tiktok.com/@${TIKTOK_HANDLE}`}
+                  href={ZALO_LINK}
                   target="_blank"
                   rel="noreferrer"
-                  onClick={() => setFollowed(true)}
-                  className="block text-center bg-ink text-canvas font-medium px-6 py-3.5 rounded-full mb-3"
+                  onClick={() => setContactChannel("zalo")}
+                  className="flex items-center justify-center py-3 rounded-xl border border-line bg-white hover:border-rose transition-colors text-xs font-medium"
                 >
-                  Mở TikTok @{TIKTOK_HANDLE}
+                  Zalo
                 </a>
-                <button
-                  disabled={!followed}
-                  onClick={() => setStep(2)}
-                  className="w-full bg-rose disabled:bg-line disabled:text-ink/30 text-white font-medium px-6 py-3.5 rounded-full transition-colors"
+                <a
+                  href={MESSENGER_LINK}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setContactChannel("messenger")}
+                  className="flex items-center justify-center py-3 rounded-xl border border-line bg-white hover:border-rose transition-colors text-xs font-medium"
                 >
-                  Đã follow, tiếp tục
-                </button>
-              </>
-            )}
-
-            {step === 2 && (
-              <>
-                <h3 className="font-display font-semibold text-xl mb-2">Gửi mã để nhận báo cáo</h3>
-                <p className="text-sm text-ink/60 mb-4">
-                  Nhắn nội dung sau qua Zalo hoặc Messenger — Hamin sẽ tự tay gửi báo cáo đầy đủ cho bạn.
-                </p>
-                <div className="bg-white rounded-xl px-4 py-3 mb-4 flex items-center justify-between border border-line">
-                  <code className="font-mono text-sm">{keywordMessage}</code>
-                  <button onClick={copyKeyword} className="font-mono text-xs text-rose font-medium">
-                    Copy
-                  </button>
-                </div>
-
-                <div className="flex gap-2 mb-3">
-                  <button
-                    onClick={() => setContactChannel("zalo")}
-                    className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-colors ${
-                      contactChannel === "zalo" ? "bg-ink text-canvas" : "bg-white border border-line"
-                    }`}
-                  >
-                    Zalo
-                  </button>
-                  <button
-                    onClick={() => setContactChannel("messenger")}
-                    className={`flex-1 py-2.5 rounded-full text-sm font-medium transition-colors ${
-                      contactChannel === "messenger" ? "bg-ink text-canvas" : "bg-white border border-line"
-                    }`}
-                  >
-                    Messenger
-                  </button>
-                </div>
-
-                <input
-                  value={contactValue}
-                  onChange={(e) => setContactValue(e.target.value)}
-                  placeholder={contactChannel === "zalo" ? "Số điện thoại Zalo" : "Username Messenger"}
-                  className="w-full border border-line bg-white rounded-full px-4 py-3 text-sm mb-4"
-                />
-
-                <button
-                  onClick={confirmSend}
-                  disabled={submitting || !contactValue.trim()}
-                  className="w-full bg-rose disabled:opacity-50 text-white font-medium px-6 py-3.5 rounded-full"
+                  Messenger
+                </a>
+                <a
+                  href={TIKTOK_LINK}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={() => setContactChannel("tiktok")}
+                  className="flex items-center justify-center py-3 rounded-xl border border-line bg-white hover:border-rose transition-colors text-xs font-medium"
                 >
-                  {submitting ? "Đang gửi..." : "Gửi mã để nhận báo cáo"}
-                </button>
-              </>
-            )}
+                  TikTok
+                </a>
+              </div>
+            </div>
+
+            {/* Việc 3: nhập liên hệ + xác nhận — luôn hiện sẵn, không cần bấm "tiếp tục" trước */}
+            <div>
+              <p className="font-mono text-[11px] text-ink/35 uppercase tracking-wide mb-2">
+                Việc 3 · Cho Hamin biết liên hệ lại qua đâu
+              </p>
+              <input
+                value={contactValue}
+                onChange={(e) => setContactValue(e.target.value)}
+                placeholder={
+                  contactChannel === "zalo"
+                    ? "Số điện thoại Zalo của bạn"
+                    : contactChannel === "messenger"
+                    ? "Tên hiển thị Messenger của bạn"
+                    : "Username TikTok của bạn"
+                }
+                className="w-full border border-line bg-white rounded-full px-4 py-3 text-sm mb-4"
+              />
+
+              <button
+                onClick={confirmSend}
+                disabled={submitting || !contactValue.trim()}
+                className="w-full bg-rose disabled:opacity-50 text-white font-medium px-6 py-3.5 rounded-full"
+              >
+                {submitting ? "Đang gửi..." : "Xác nhận đã gửi mã"}
+              </button>
+            </div>
 
             <button
               onClick={() => setPopupOpen(false)}
