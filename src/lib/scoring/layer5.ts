@@ -97,17 +97,19 @@ DNA Type: ${archetype.name} — ${archetype.shortDescription}
 Mâu thuẫn hành vi phát hiện được (dùng cho phần Điểm mù): ${describeContradictions(contradictions)}
 Độ tin cậy dữ liệu: ${reliabilityTier}
 
-Giọng văn: thẳng thắn, thực tế, như một người chị từng trải — tuyệt đối không dùng ngôn ngữ tử vi mơ hồ, mỗi câu phải gắn với hành vi cụ thể.
+Giọng văn: thẳng thắn, thực tế, như một người chị từng trải — tuyệt đối không dùng ngôn ngữ tử vi mơ hồ, mỗi câu phải gắn với hành vi cụ thể. LUÔN xưng hô người đọc là "bạn" (không dùng "em").
+
+Với các mục có nhiều ý (topStrengths, suitableCareers, commonMistakes, ninetyDayPlan): BẮT BUỘC xuống dòng (ký tự \\n\\n) giữa mỗi ý được đánh số, không viết liền một đoạn văn dài.
 
 Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào khác ngoài JSON:
 {
-  "summary": "đoạn tóm tắt DNA (3-4 câu)",
-  "topStrengths": "3 điểm mạnh nhất, mỗi điểm 1-2 câu",
-  "blindSpots": "điểm mù dựa trên mâu thuẫn phát hiện được (3-4 câu)",
-  "suitableCareers": "3 nghề phù hợp kèm lý do ngắn gọn",
-  "idealEnvironment": "môi trường làm việc lý tưởng (3-4 câu)",
-  "commonMistakes": "2-3 sai lầm dễ mắc phải",
-  "ninetyDayPlan": "kế hoạch phát triển 90 ngày chia 3 giai đoạn 30 ngày"
+  "summary": "đoạn tóm tắt DNA (3-4 câu), xưng \"bạn\"",
+  "topStrengths": "3 điểm mạnh nhất, đánh số 1. 2. 3., MỖI Ý CÁCH NHAU BẰNG \\n\\n",
+  "blindSpots": "điểm mù dựa trên mâu thuẫn phát hiện được (3-4 câu), xưng \"bạn\"",
+  "suitableCareers": "3 nghề phù hợp kèm lý do ngắn gọn, đánh số 1. 2. 3., MỖI Ý CÁCH NHAU BẰNG \\n\\n",
+  "idealEnvironment": "môi trường làm việc lý tưởng (3-4 câu), xưng \"bạn\"",
+  "commonMistakes": "2-3 sai lầm dễ mắc phải, đánh số 1. 2. 3., MỖI Ý CÁCH NHAU BẰNG \\n\\n",
+  "ninetyDayPlan": "kế hoạch phát triển 90 ngày chia 3 giai đoạn 30 ngày, MỖI GIAI ĐOẠN CÁCH NHAU BẰNG \\n\\n"
 }`;
 
   const response = await client.models.generateContent({

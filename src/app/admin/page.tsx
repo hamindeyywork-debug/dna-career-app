@@ -21,13 +21,27 @@ const SECTION_LABELS: Record<string, string> = {
   ninetyDayPlan: "Kế hoạch 90 ngày",
 };
 
+const LIST_FIELDS = new Set(["topStrengths", "suitableCareers", "commonMistakes", "ninetyDayPlan"]);
+
+// Tự tách dòng trước mỗi mục đánh số (1. 2. 3...), phòng trường hợp AI viết liền
+// không xuống dòng dù đã được nhắc trong prompt — đảm bảo hiển thị luôn đúng.
+function formatSection(key: string, text: string): string {
+  if (!LIST_FIELDS.has(key) || !text) return text;
+  return text
+    .replace(/\s*(?=\d+\.\s)/g, "\n")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .join("\n\n");
+}
+
 function buildPlainText(detail: any): string {
   const report = detail.report || {};
   const lines = [`DNA CAREER — ${detail.archetype_name} (${detail.code})`, ""];
   for (const key of Object.keys(SECTION_LABELS)) {
     if (report[key]) {
       lines.push(`— ${SECTION_LABELS[key]} —`);
-      lines.push(report[key]);
+      lines.push(formatSection(key, report[key]));
       lines.push("");
     }
   }
@@ -150,7 +164,7 @@ export default function AdminPage() {
               return (
                 <div key={key} className="border-t border-line pt-4">
                   <p className="font-mono text-[11px] uppercase tracking-wide text-ink/35 mb-1.5">{label}</p>
-                  <p className="text-sm text-ink/80 whitespace-pre-line leading-relaxed">{content}</p>
+                  <p className="text-sm text-ink/80 whitespace-pre-line leading-relaxed">{formatSection(key, content)}</p>
                 </div>
               );
             })}
