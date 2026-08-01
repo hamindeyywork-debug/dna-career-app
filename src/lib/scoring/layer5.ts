@@ -99,35 +99,38 @@ Mâu thuẫn hành vi phát hiện được (dùng cho phần Điểm mù): ${de
 
 Giọng văn: thẳng thắn, thực tế, như một người chị từng trải — tuyệt đối không dùng ngôn ngữ tử vi mơ hồ, mỗi câu phải gắn với hành vi cụ thể. LUÔN xưng hô người đọc là "bạn" (không dùng "em").
 
-Với các mục có nhiều ý (topStrengths, suitableCareers, commonMistakes, ninetyDayPlan): BẮT BUỘC xuống dòng (ký tự \\n\\n) giữa mỗi ý được đánh số, không viết liền một đoạn văn dài.
+YÊU CẦU ĐỘ SÂU (quan trọng):
+- Mỗi nhận định phải giải thích RÕ TẠI SAO dựa trên đúng yếu tố DNA của người này, không viết chung chung có thể áp dụng cho bất kỳ ai.
+- Với các mục có nhiều ý (topStrengths, suitableCareers, commonMistakes): BẮT BUỘC xuống dòng (\\n\\n) giữa mỗi ý đánh số, mỗi ý dài 2-3 câu có ví dụ hành vi cụ thể, không viết 1 câu ngắn cụt.
+- ninetyDayPlan PHẢI chi tiết ở cấp độ TUẦN, không chỉ mô tả chung cho cả giai đoạn 30 ngày. Mỗi giai đoạn 30 ngày cần chia thành 2-3 mốc tuần cụ thể, mỗi mốc có: (a) một hành động cụ thể có thể làm ngay, (b) lý do hành động này phù hợp với đúng DNA của người này, (c) một cách để tự kiểm tra xem có đang tiến bộ không. Tổng độ dài mục này nên gấp đôi các mục khác.
 
 Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào khác ngoài JSON:
 {
-  "summary": "đoạn tóm tắt DNA (3-4 câu), xưng \"bạn\"",
-  "topStrengths": "3 điểm mạnh nhất, đánh số 1. 2. 3., MỖI Ý CÁCH NHAU BẰNG \\n\\n",
-  "blindSpots": "điểm mù dựa trên mâu thuẫn phát hiện được (3-4 câu), xưng \"bạn\"",
-  "suitableCareers": "3 nghề phù hợp kèm lý do ngắn gọn, đánh số 1. 2. 3., MỖI Ý CÁCH NHAU BẰNG \\n\\n",
-  "idealEnvironment": "môi trường làm việc lý tưởng (3-4 câu), xưng \"bạn\"",
-  "commonMistakes": "2-3 sai lầm dễ mắc phải, đánh số 1. 2. 3., MỖI Ý CÁCH NHAU BẰNG \\n\\n",
-  "ninetyDayPlan": "kế hoạch phát triển 90 ngày chia 3 giai đoạn 30 ngày, MỖI GIAI ĐOẠN CÁCH NHAU BẰNG \\n\\n"
+  "summary": "đoạn tóm tắt DNA (4-5 câu), xưng \"bạn\"",
+  "topStrengths": "3 điểm mạnh nhất, đánh số 1. 2. 3., mỗi điểm 2-3 câu kèm ví dụ hành vi cụ thể, MỖI Ý CÁCH NHAU BẰNG \\n\\n",
+  "blindSpots": "điểm mù dựa trên mâu thuẫn phát hiện được (4-5 câu, giải thích cả 2 phía của mâu thuẫn), xưng \"bạn\"",
+  "suitableCareers": "3 nghề phù hợp, đánh số 1. 2. 3., mỗi nghề 2-3 câu giải thích rõ vì sao hợp với đúng tổ hợp DNA này, MỖI Ý CÁCH NHAU BẰNG \\n\\n",
+  "idealEnvironment": "môi trường làm việc lý tưởng (4-5 câu, càng cụ thể càng tốt: quy mô đội nhóm, phong cách quản lý, nhịp độ)",
+  "commonMistakes": "2-3 sai lầm dễ mắc phải, đánh số 1. 2. 3., mỗi sai lầm 2-3 câu kèm tình huống ví dụ cụ thể, MỖI Ý CÁCH NHAU BẰNG \\n\\n",
+  "ninetyDayPlan": "kế hoạch phát triển 90 ngày chia 3 giai đoạn (Ngày 1-30, 31-60, 61-90), MỖI GIAI ĐOẠN chia nhỏ thành 2-3 mốc tuần cụ thể kèm hành động + lý do + cách tự kiểm tra, MỖI GIAI ĐOẠN CÁCH NHAU BẰNG \\n\\n"
 }`;
 
   const response = await client.models.generateContent({
     model: "gemini-3.6-flash",
     contents: prompt,
     config: {
-      maxOutputTokens: 4000,
+      maxOutputTokens: 6000,
       responseMimeType: "application/json",
       responseSchema: {
         type: Type.OBJECT,
         properties: {
-          summary: { type: Type.STRING, description: "Đoạn tóm tắt DNA, 3-4 câu, KHÔNG chứa JSON hay ký tự đặc biệt" },
-          topStrengths: { type: Type.STRING, description: "3 điểm mạnh nhất, mỗi điểm 1-2 câu, cách nhau bằng xuống dòng" },
-          blindSpots: { type: Type.STRING, description: "Điểm mù dựa trên mâu thuẫn phát hiện được, 3-4 câu" },
-          suitableCareers: { type: Type.STRING, description: "3 nghề phù hợp kèm lý do ngắn gọn, mỗi nghề 1 dòng" },
-          idealEnvironment: { type: Type.STRING, description: "Môi trường làm việc lý tưởng, 3-4 câu" },
-          commonMistakes: { type: Type.STRING, description: "2-3 sai lầm dễ mắc phải, mỗi sai lầm 1 dòng" },
-          ninetyDayPlan: { type: Type.STRING, description: "Kế hoạch phát triển 90 ngày, chia 3 giai đoạn 30 ngày" },
+          summary: { type: Type.STRING, description: "Đoạn tóm tắt DNA, 4-5 câu, KHÔNG chứa JSON hay ký tự đặc biệt" },
+          topStrengths: { type: Type.STRING, description: "3 điểm mạnh nhất, mỗi điểm 2-3 câu kèm ví dụ hành vi cụ thể, cách nhau bằng xuống dòng" },
+          blindSpots: { type: Type.STRING, description: "Điểm mù dựa trên mâu thuẫn phát hiện được, 4-5 câu" },
+          suitableCareers: { type: Type.STRING, description: "3 nghề phù hợp, mỗi nghề 2-3 câu giải thích rõ lý do" },
+          idealEnvironment: { type: Type.STRING, description: "Môi trường làm việc lý tưởng, 4-5 câu cụ thể" },
+          commonMistakes: { type: Type.STRING, description: "2-3 sai lầm dễ mắc phải, mỗi sai lầm 2-3 câu kèm ví dụ" },
+          ninetyDayPlan: { type: Type.STRING, description: "Kế hoạch 90 ngày chi tiết theo tuần, 3 giai đoạn 30 ngày, mỗi giai đoạn 2-3 mốc tuần cụ thể" },
         },
         required: [
           "summary", "topStrengths", "blindSpots", "suitableCareers",
