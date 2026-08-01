@@ -101,8 +101,10 @@ Giọng văn: thẳng thắn, thực tế, như một người chị từng tr�
 
 YÊU CẦU ĐỘ SÂU (quan trọng):
 - Mỗi nhận định phải giải thích RÕ TẠI SAO dựa trên đúng yếu tố DNA của người này, không viết chung chung có thể áp dụng cho bất kỳ ai.
-- Với các mục có nhiều ý (topStrengths, suitableCareers, commonMistakes): BẮT BUỘC xuống dòng (\\n\\n) giữa mỗi ý đánh số, mỗi ý dài 2-3 câu có ví dụ hành vi cụ thể, không viết 1 câu ngắn cụt.
-- ninetyDayPlan PHẢI chi tiết ở cấp độ TUẦN, không chỉ mô tả chung cho cả giai đoạn 30 ngày. Mỗi giai đoạn 30 ngày cần chia thành 2-3 mốc tuần cụ thể, mỗi mốc có: (a) một hành động cụ thể có thể làm ngay, (b) lý do hành động này phù hợp với đúng DNA của người này, (c) một cách để tự kiểm tra xem có đang tiến bộ không. Tổng độ dài mục này nên gấp đôi các mục khác.
+- TUYỆT ĐỐI KHÔNG được viết ra bất kỳ con số thập phân/điểm số thô nào (VD: "0.54", "điểm 0.51", "chỉ số 0.7") — người đọc không biết thang điểm này là gì nên sẽ gây khó hiểu. Thay vào đó dùng ngôn ngữ định tính: "cao", "vượt trội", "rất mạnh", "nổi bật hơn hẳn".
+- Với các mục có nhiều ý (topStrengths, suitableCareers, commonMistakes): BẮT BUỘC xuống dòng (\\n\\n) giữa mỗi ý đánh số, mỗi ý dài 2-3 câu.
+- Nếu có ví dụ minh họa trong mỗi ý, LUÔN bắt đầu bằng "Ví dụ: " và đặt câu ví dụ đó xuống dòng riêng (thêm \\n trước "Ví dụ:"), tách biệt với câu giải thích chính phía trên.
+- ninetyDayPlan PHẢI chi tiết ở cấp độ TUẦN, không chỉ mô tả chung cho cả giai đoạn 30 ngày. Mỗi giai đoạn 30 ngày cần chia thành 2-3 mốc tuần cụ thể, mỗi mốc có: (a) một hành động cụ thể có thể làm ngay, (b) lý do hành động này phù hợp với đúng DNA của người này, (c) một cách để tự kiểm tra xem có đang tiến bộ không. BẮT BUỘC xuống dòng (\\n) trước mỗi phần (a), (b), (c) — không viết liền thành một đoạn văn dài. Tổng độ dài mục này nên gấp đôi các mục khác.
 
 Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào khác ngoài JSON:
 {
@@ -153,15 +155,19 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
 
   try {
     const parsed = JSON.parse(cleaned) as ReportSections;
-    // Đảm bảo mọi field đều là string, tránh undefined làm vỡ giao diện
+    // Lọc bỏ mọi số thập phân dạng "0.54", "(0.51)" còn sót lại — phòng trường
+    // hợp AI không tuân thủ đúng 100% dù đã yêu cầu trong prompt.
+    const stripRawScores = (text: string) =>
+      text.replace(/\(?[-]?\d+\.\d{1,3}\)?/g, "").replace(/\s{2,}/g, " ").replace(/\s+([.,;:])/g, "$1").trim();
+
     return {
-      summary: parsed.summary ?? "",
-      topStrengths: parsed.topStrengths ?? "",
-      blindSpots: parsed.blindSpots ?? "",
-      suitableCareers: parsed.suitableCareers ?? "",
-      idealEnvironment: parsed.idealEnvironment ?? "",
-      commonMistakes: parsed.commonMistakes ?? "",
-      ninetyDayPlan: parsed.ninetyDayPlan ?? "",
+      summary: stripRawScores(parsed.summary ?? ""),
+      topStrengths: stripRawScores(parsed.topStrengths ?? ""),
+      blindSpots: stripRawScores(parsed.blindSpots ?? ""),
+      suitableCareers: stripRawScores(parsed.suitableCareers ?? ""),
+      idealEnvironment: stripRawScores(parsed.idealEnvironment ?? ""),
+      commonMistakes: stripRawScores(parsed.commonMistakes ?? ""),
+      ninetyDayPlan: stripRawScores(parsed.ninetyDayPlan ?? ""),
     };
   } catch {
     // In log để có thể xem trong Vercel > Logs nếu cần debug tiếp

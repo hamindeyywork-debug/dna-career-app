@@ -19,7 +19,7 @@ const LOCKED_SECTIONS = [
   { n: "04", title: "Điểm mù của bạn", hint: "Điều này có thể đang âm thầm ảnh hưởng đến sự nghiệp của bạn" },
   { n: "05", title: "Môi trường làm việc lý tưởng", hint: "Nơi bạn phát triển nhanh nhất, và nơi bạn nên tránh" },
   { n: "06", title: "Những sai lầm bạn dễ mắc", hint: "3 điều phổ biến khiến người cùng DNA Type dễ vấp phải" },
-  { n: "07", title: "Kế hoạch phát triển 90 ngày", hint: "Từng bước cụ thể, chia theo 3 giai đoạn 30 ngày" },
+  { n: "07", title: "Kế hoạch 90 ngày phát triển sự nghiệp", hint: "Từng bước cụ thể theo tuần, chia theo 3 giai đoạn 30 ngày" },
 ];
 
 const TIKTOK_HANDLE = "hamin139";
@@ -158,11 +158,11 @@ export default function ResultView(props: Props) {
         {props.careersTeaser.length > 0 && (
           <div className="mb-10 animate-fade-up">
             <p className="font-mono text-[11px] text-ink/35 uppercase tracking-[0.15em] mb-3">03 · Nghề phù hợp</p>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid gap-2">
               {props.careersTeaser.map((c, i) => (
-                <span key={i} className="bg-sage-soft text-sage border border-sage/30 rounded-full px-4 py-2 text-sm">
+                <div key={i} className="bg-sage-soft/60 text-ink/80 border border-sage/30 rounded-xl px-4 py-3.5 text-sm leading-relaxed">
                   {c}
-                </span>
+                </div>
               ))}
             </div>
           </div>

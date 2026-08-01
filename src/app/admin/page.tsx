@@ -18,21 +18,29 @@ const SECTION_LABELS: Record<string, string> = {
   suitableCareers: "Nghề phù hợp",
   idealEnvironment: "Môi trường lý tưởng",
   commonMistakes: "Sai lầm dễ mắc",
-  ninetyDayPlan: "Kế hoạch 90 ngày",
+  ninetyDayPlan: "Kế hoạch 90 ngày phát triển sự nghiệp",
 };
 
 const LIST_FIELDS = new Set(["topStrengths", "suitableCareers", "commonMistakes", "ninetyDayPlan"]);
 
-// Tự tách dòng trước mỗi mục đánh số (1. 2. 3...), phòng trường hợp AI viết liền
-// không xuống dòng dù đã được nhắc trong prompt — đảm bảo hiển thị luôn đúng.
+// Tự tách dòng trước mỗi mục đánh số (1. 2. 3...) và trước "Ví dụ:", phòng
+// trường hợp AI viết liền không xuống dòng dù đã được nhắc trong prompt.
 function formatSection(key: string, text: string): string {
-  if (!LIST_FIELDS.has(key) || !text) return text;
-  return text
-    .replace(/\s*(?=\d+\.\s)/g, "\n")
+  if (!text) return text;
+  let result = text;
+  if (LIST_FIELDS.has(key)) {
+    result = result.replace(/\s*(?=\d+\.\s)/g, "\n");
+  }
+  result = result
+    .replace(/\s*(?=Ví dụ:)/g, "\n")
+    .replace(/\s*(?=\(b\)\s)/g, "\n")
+    .replace(/\s*(?=\(c\)\s)/g, "\n")
+    .replace(/\s*(?=-\s*Tuần\s)/gi, "\n\n");
+  return result
     .split("\n")
     .map((line) => line.trim())
     .filter(Boolean)
-    .join("\n\n");
+    .join("\n");
 }
 
 function buildPlainText(detail: any): string {
@@ -161,10 +169,30 @@ export default function AdminPage() {
             {Object.entries(SECTION_LABELS).map(([key, label]) => {
               const content = detail.report?.[key];
               if (!content) return null;
+              const lines = formatSection(key, content).split("\n");
               return (
                 <div key={key} className="border-t border-line pt-4">
                   <p className="font-mono text-[11px] uppercase tracking-wide text-ink/35 mb-1.5">{label}</p>
-                  <p className="text-sm text-ink/80 whitespace-pre-line leading-relaxed">{formatSection(key, content)}</p>
+                  <div className="text-sm text-ink/80 leading-relaxed space-y-1.5">
+                    {lines.map((line, i) => {
+                      const isExample = line.startsWith("Ví dụ:");
+                      const isNumbered = /^\d+\.\s/.test(line);
+                      return (
+                        <p
+                          key={i}
+                          className={
+                            isExample
+                              ? "italic text-ink/60 pl-3 border-l-2 border-line"
+                              : isNumbered && i > 0
+                              ? "pt-2"
+                              : ""
+                          }
+                        >
+                          {line}
+                        </p>
+                      );
+                    })}
+                  </div>
                 </div>
               );
             })}
