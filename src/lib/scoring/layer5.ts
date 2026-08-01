@@ -1,4 +1,4 @@
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI, Type, ThinkingLevel } from "@google/genai";
 import { FACTOR_CODES, FACTORS, FactorCode } from "./factors";
 import { FactorMatrix } from "./layer1_2";
 import { ConfidenceResult } from "./layer3_4";
@@ -121,8 +121,9 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
     model: "gemini-3.6-flash",
     contents: prompt,
     config: {
-      maxOutputTokens: 6000,
+      maxOutputTokens: 8000,
       responseMimeType: "application/json",
+      thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
       responseSchema: {
         type: Type.OBJECT,
         properties: {
