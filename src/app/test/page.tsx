@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { QUESTIONS } from "@/lib/scoring/questions";
 
-type Stage = "intro" | "question" | "loading";
+type Stage = "intro" | "question" | "loading" | "error";
 
 const LOADING_MESSAGES = [
   "Đang đọc 40 phản ứng của bạn...",
@@ -39,12 +39,12 @@ export default function TestPage() {
       setIndex(index + 1);
       questionStartRef.current = Date.now();
     } else {
-      setStage("loading");
       await submitAnswers(newAnswers);
     }
   }
 
   async function submitAnswers(finalAnswers: typeof answers) {
+    setStage("loading");
     const msgTimer = setInterval(() => {
       setLoadingMsgIndex((i) => Math.min(i + 1, LOADING_MESSAGES.length - 1));
     }, 2200);
@@ -58,17 +58,14 @@ export default function TestPage() {
       const data = await res.json();
       clearInterval(msgTimer);
       if (!res.ok) {
-        alert(data.error ?? "Có lỗi xảy ra, vui lòng thử lại.");
-        setStage("intro");
-        setIndex(0);
-        setAnswers([]);
+        // Không reset câu trả lời — giữ nguyên để người dùng thử lại mà không cần làm lại 40 câu
+        setStage("error");
         return;
       }
       router.push(`/result/${data.code}`);
     } catch (e) {
       clearInterval(msgTimer);
-      alert("Không thể kết nối tới máy chủ. Vui lòng thử lại.");
-      setStage("intro");
+      setStage("error");
     }
   }
 
@@ -106,6 +103,27 @@ export default function TestPage() {
           </div>
         </div>
         <p className="font-mono text-sm text-ink/60">{LOADING_MESSAGES[loadingMsgIndex]}</p>
+      </main>
+    );
+  }
+
+  if (stage === "error") {
+    return (
+      <main className="min-h-screen flex flex-col items-center justify-center px-6 text-center">
+        <div className="text-4xl mb-4">⏳</div>
+        <h2 className="text-xl font-bold mb-3">Hệ thống đang hơi đông</h2>
+        <p className="text-ink/60 max-w-sm mb-2">
+          AI đang xử lý nhiều yêu cầu cùng lúc nên phản hồi chậm hơn bình thường.
+        </p>
+        <p className="text-ink/60 max-w-sm mb-8">
+          Câu trả lời của bạn vẫn được giữ nguyên — không cần làm lại từ đầu.
+        </p>
+        <button
+          onClick={() => submitAnswers(answers)}
+          className="bg-rose text-white font-semibold px-8 py-4 rounded-full shadow-lg hover:opacity-90 transition"
+        >
+          Thử lại ngay
+        </button>
       </main>
     );
   }

@@ -117,7 +117,7 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
   "ninetyDayPlan": "kế hoạch phát triển 90 ngày chia 3 giai đoạn (Ngày 1-30, 31-60, 61-90), MỖI GIAI ĐOẠN chia nhỏ thành 2-3 mốc tuần cụ thể kèm hành động + lý do + cách tự kiểm tra, MỖI GIAI ĐOẠN CÁCH NHAU BẰNG \\n\\n"
 }`;
 
-  const response = await client.models.generateContent({
+  const requestConfig = {
     model: "gemini-3.6-flash",
     contents: prompt,
     config: {
@@ -141,7 +141,27 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
         ],
       },
     },
-  });
+  };
+
+  // Gemini đôi khi báo 503 "quá tải tạm thời" (lỗi từ phía Google, không phải lỗi code) —
+  // tự động thử lại tối đa 3 lần, mỗi lần đợi lâu hơn một chút, trước khi thực sự báo lỗi.
+  async function callWithRetry(maxAttempts = 3): Promise<any> {
+    let lastError: any;
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        return await client.models.generateContent(requestConfig);
+      } catch (err: any) {
+        lastError = err;
+        const isOverloaded = err?.message?.includes("UNAVAILABLE") || err?.message?.includes("503");
+        if (!isOverloaded || attempt === maxAttempts) throw err;
+        const waitMs = attempt * 1500; // 1.5s, 3s, 4.5s
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+      }
+    }
+    throw lastError;
+  }
+
+  const response = await callWithRetry();
 
   const rawText = response.text ?? "{}";
   let cleaned = rawText.replace(/```json|```/g, "").trim();
