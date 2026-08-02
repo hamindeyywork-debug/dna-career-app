@@ -104,7 +104,7 @@ YÊU CẦU ĐỘ SÂU (quan trọng):
 - TUYỆT ĐỐI KHÔNG được viết ra bất kỳ con số thập phân/điểm số thô nào (VD: "0.54", "điểm 0.51", "chỉ số 0.7") — người đọc không biết thang điểm này là gì nên sẽ gây khó hiểu. Thay vào đó dùng ngôn ngữ định tính: "cao", "vượt trội", "rất mạnh", "nổi bật hơn hẳn".
 - Với các mục có nhiều ý (topStrengths, suitableCareers, commonMistakes): BẮT BUỘC xuống dòng (\\n\\n) giữa mỗi ý đánh số, mỗi ý dài 2-3 câu.
 - Nếu có ví dụ minh họa trong mỗi ý, LUÔN bắt đầu bằng "Ví dụ: " và đặt câu ví dụ đó xuống dòng riêng (thêm \\n trước "Ví dụ:"), tách biệt với câu giải thích chính phía trên.
-- ninetyDayPlan PHẢI chi tiết ở cấp độ TUẦN, không chỉ mô tả chung cho cả giai đoạn 30 ngày. Mỗi giai đoạn 30 ngày cần chia thành 2-3 mốc tuần cụ thể, mỗi mốc có: (a) một hành động cụ thể có thể làm ngay, (b) lý do hành động này phù hợp với đúng DNA của người này, (c) một cách để tự kiểm tra xem có đang tiến bộ không. BẮT BUỘC xuống dòng (\\n) trước mỗi phần (a), (b), (c) — không viết liền thành một đoạn văn dài. Tổng độ dài mục này nên gấp đôi các mục khác.
+- ninetyDayPlan PHẢI chi tiết ở cấp độ TUẦN, không chỉ mô tả chung cho cả giai đoạn 30 ngày. Mỗi giai đoạn 30 ngày cần chia thành 2-3 mốc tuần cụ thể (VD: "Tuần 1-2:"). Mỗi mốc tuần liệt kê ĐÚNG 3 HÀNH ĐỘNG cụ thể người này cần làm trong tuần đó để phát triển sự nghiệp, đánh dấu (a) (b) (c) — CẢ 3 ĐỀU PHẢI LÀ VIỆC LÀM CỤ THỂ, bắt đầu bằng động từ hành động (VD: "Lập file...", "Chủ động xin...", "Dành 15 phút mỗi ngày để..."), KHÔNG viết dòng nào thành lý do giải thích hay cách kiểm tra riêng biệt. Mỗi hành động có thể lồng ngắn gọn lý do phù hợp với DNA ngay trong cùng câu (VD: "Chủ động đề xuất ý tưởng trong họp — tận dụng đúng khả năng sáng tạo cao của bạn"), không tách thành dòng riêng. BẮT BUỘC xuống dòng (\\n) trước mỗi phần (a), (b), (c) và trước mỗi "Tuần X-Y:". Tổng độ dài mục này nên gấp đôi các mục khác.
 
 Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào khác ngoài JSON:
 {
@@ -133,7 +133,7 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
           suitableCareers: { type: Type.STRING, description: "3 nghề phù hợp, mỗi nghề 2-3 câu giải thích rõ lý do" },
           idealEnvironment: { type: Type.STRING, description: "Môi trường làm việc lý tưởng, 4-5 câu cụ thể" },
           commonMistakes: { type: Type.STRING, description: "2-3 sai lầm dễ mắc phải, mỗi sai lầm 2-3 câu kèm ví dụ" },
-          ninetyDayPlan: { type: Type.STRING, description: "Kế hoạch 90 ngày chi tiết theo tuần, 3 giai đoạn 30 ngày, mỗi giai đoạn 2-3 mốc tuần cụ thể" },
+          ninetyDayPlan: { type: Type.STRING, description: "Kế hoạch 90 ngày chi tiết theo tuần, 3 giai đoạn 30 ngày, mỗi mốc tuần liệt kê đúng 3 hành động cụ thể (a)(b)(c) cần làm" },
         },
         required: [
           "summary", "topStrengths", "blindSpots", "suitableCareers",

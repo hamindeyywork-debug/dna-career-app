@@ -35,7 +35,8 @@ function formatSection(key: string, text: string): string {
     .replace(/\s*(?=Ví dụ:)/g, "\n")
     .replace(/\s*(?=\(b\)\s)/g, "\n")
     .replace(/\s*(?=\(c\)\s)/g, "\n")
-    .replace(/\s*(?=-\s*Tuần\s)/gi, "\n\n");
+    .replace(/\s*(?=Tuần\s*\d+\s*-\s*\d+\s*:)/gi, "\n\n")
+    .replace(/\s*(?=Giai đoạn\s*\d+\s*:)/gi, "\n\n");
   return result
     .split("\n")
     .map((line) => line.trim())
@@ -177,12 +178,18 @@ export default function AdminPage() {
                     {lines.map((line, i) => {
                       const isExample = line.startsWith("Ví dụ:");
                       const isNumbered = /^\d+\.\s/.test(line);
+                      const isStage = /^Giai đoạn\s*\d+\s*:/i.test(line);
+                      const isWeek = /^Tuần\s*\d+\s*-\s*\d+\s*:/i.test(line);
                       return (
                         <p
                           key={i}
                           className={
                             isExample
-                              ? "italic text-ink/60 pl-3 border-l-2 border-line"
+                              ? "italic text-ink/55 text-[13px] pl-3 border-l-2 border-line"
+                              : isStage
+                              ? "font-semibold text-ink pt-3 first:pt-0"
+                              : isWeek
+                              ? "font-medium text-ink/90 pt-1.5"
                               : isNumbered && i > 0
                               ? "pt-2"
                               : ""
