@@ -7,10 +7,12 @@ export const dynamic = "force-dynamic";
 
 function splitList(text: unknown, max: number): string[] {
   if (typeof text !== "string" || !text.trim()) return [];
-  // Tách theo số thứ tự (1. 2. 3.), gạch đầu dòng, hoặc xuống dòng — tùy AI trả về kiểu nào
+  // Chỉ tách khi gặp số thứ tự đầu mục (1. 2. 3.) — KHÔNG tách theo mọi dấu
+  // xuống dòng, để câu "Ví dụ:" (được AI xuống dòng riêng bên trong mỗi mục)
+  // vẫn thuộc đúng mục cha của nó, không bị hiểu nhầm thành mục mới.
   const parts = text
-    .split(/\n+|(?=\d\.\s)/)
-    .map((s) => s.replace(/^[\d.\-•\s]+/, "").trim())
+    .split(/(?=\d+\.\s)/)
+    .map((s) => s.replace(/^\d+\.\s*/, "").trim())
     .filter((s) => s.length > 3);
   return parts.slice(0, max);
 }

@@ -23,6 +23,21 @@ const LOCKED_SECTIONS = [
 ];
 
 const TIKTOK_HANDLE = "hamin139";
+
+// Tách câu "Ví dụ: ..." (nếu có) thành dòng riêng, in nghiêng, có viền trái —
+// để phân biệt rõ với câu giải thích chính, dùng chung cho strengths & careers.
+function renderWithExample(text: string) {
+  const idx = text.indexOf("Ví dụ:");
+  if (idx === -1) return <span>{text}</span>;
+  const main = text.slice(0, idx).trim();
+  const example = text.slice(idx).trim();
+  return (
+    <>
+      <span>{main}</span>
+      <p className="italic text-ink/55 text-xs mt-2 pl-3 border-l-2 border-line">{example}</p>
+    </>
+  );
+}
 // Chỉ dùng để tạo link mở đúng kênh — không hiển thị dạng chữ ra giao diện
 const ZALO_PHONE = "0793223663";
 const FACEBOOK_ID = "61588946940789";
@@ -148,7 +163,7 @@ export default function ResultView(props: Props) {
               {props.strengthsTeaser.map((s, i) => (
                 <div key={i} className="bg-white rounded-xl px-4 py-3.5 border border-line text-sm text-ink/75 flex gap-3">
                   <span className="font-mono text-rose flex-shrink-0">{String(i + 1).padStart(2, "0")}</span>
-                  <span>{s}</span>
+                  <span className="flex-1">{renderWithExample(s)}</span>
                 </div>
               ))}
             </div>
@@ -161,7 +176,7 @@ export default function ResultView(props: Props) {
             <div className="grid gap-2">
               {props.careersTeaser.map((c, i) => (
                 <div key={i} className="bg-sage-soft/60 text-ink/80 border border-sage/30 rounded-xl px-4 py-3.5 text-sm leading-relaxed">
-                  {c}
+                  {renderWithExample(c)}
                 </div>
               ))}
             </div>
