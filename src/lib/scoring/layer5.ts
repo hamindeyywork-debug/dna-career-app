@@ -47,6 +47,15 @@ export function layer5aClassify(matrix: FactorMatrix, confidence: ConfidenceResu
 }
 
 // ---------- LAYER 5b: sinh nội dung cá nhân hóa (gọi Claude API) ----------
+export interface NinetyDayWeek {
+  weekLabel: string; // vd. "Tuần 1-2"
+  actions: [string, string, string];
+}
+export interface NinetyDayStage {
+  stageLabel: string; // vd. "Giai đoạn 1: Ngày 1-30 - Nhận diện điểm mù"
+  weeks: NinetyDayWeek[];
+}
+
 export interface ReportSections {
   summary: string;
   topStrengths: string;
@@ -54,7 +63,7 @@ export interface ReportSections {
   suitableCareers: string;
   idealEnvironment: string;
   commonMistakes: string;
-  ninetyDayPlan: string;
+  ninetyDayPlan: NinetyDayStage[];
 }
 
 function topFactors(vector: Partial<Record<FactorCode, number>>, n: number): string {
@@ -104,7 +113,7 @@ YÊU CẦU ĐỘ SÂU (quan trọng):
 - TUYỆT ĐỐI KHÔNG được viết ra bất kỳ con số thập phân/điểm số thô nào (VD: "0.54", "điểm 0.51", "chỉ số 0.7") — người đọc không biết thang điểm này là gì nên sẽ gây khó hiểu. Thay vào đó dùng ngôn ngữ định tính: "cao", "vượt trội", "rất mạnh", "nổi bật hơn hẳn".
 - Với các mục có nhiều ý (topStrengths, suitableCareers, commonMistakes): BẮT BUỘC xuống dòng (\\n\\n) giữa mỗi ý đánh số, mỗi ý dài 2-3 câu.
 - Nếu có ví dụ minh họa trong mỗi ý, LUÔN bắt đầu bằng "Ví dụ: " và đặt câu ví dụ đó xuống dòng riêng (thêm \\n trước "Ví dụ:"), tách biệt với câu giải thích chính phía trên.
-- ninetyDayPlan PHẢI chi tiết ở cấp độ TUẦN, không chỉ mô tả chung cho cả giai đoạn 30 ngày. Mỗi giai đoạn 30 ngày cần chia thành 2-3 mốc tuần cụ thể (VD: "Tuần 1-2:"). Mỗi mốc tuần liệt kê ĐÚNG 3 HÀNH ĐỘNG cụ thể người này cần làm trong tuần đó để phát triển sự nghiệp, đánh dấu (a) (b) (c) — CẢ 3 ĐỀU PHẢI LÀ VIỆC LÀM CỤ THỂ, bắt đầu bằng động từ hành động (VD: "Lập file...", "Chủ động xin...", "Dành 15 phút mỗi ngày để..."), KHÔNG viết dòng nào thành lý do giải thích hay cách kiểm tra riêng biệt. Mỗi hành động có thể lồng ngắn gọn lý do phù hợp với DNA ngay trong cùng câu (VD: "Chủ động đề xuất ý tưởng trong họp — tận dụng đúng khả năng sáng tạo cao của bạn"), không tách thành dòng riêng. BẮT BUỘC xuống dòng (\\n) trước mỗi phần (a), (b), (c) và trước mỗi "Tuần X-Y:". Tổng độ dài mục này nên gấp đôi các mục khác.
+- ninetyDayPlan là DỮ LIỆU CÓ CẤU TRÚC (không phải văn bản tự do): gồm 3 giai đoạn (Ngày 1-30, 31-60, 61-90), mỗi giai đoạn có 2-3 tuần, mỗi tuần có ĐÚNG 3 hành động cụ thể (bắt đầu bằng động từ hành động, có thể lồng ngắn gọn lý do phù hợp DNA ngay trong câu). Xem đúng cấu trúc JSON yêu cầu bên dưới, không tự ý đổi thành chuỗi văn bản.
 
 Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào khác ngoài JSON:
 {
@@ -114,7 +123,17 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
   "suitableCareers": "3 nghề phù hợp, đánh số 1. 2. 3., mỗi nghề 2-3 câu giải thích rõ vì sao hợp với đúng tổ hợp DNA này, MỖI Ý CÁCH NHAU BẰNG \\n\\n",
   "idealEnvironment": "môi trường làm việc lý tưởng (4-5 câu, càng cụ thể càng tốt: quy mô đội nhóm, phong cách quản lý, nhịp độ)",
   "commonMistakes": "2-3 sai lầm dễ mắc phải, đánh số 1. 2. 3., mỗi sai lầm 2-3 câu kèm tình huống ví dụ cụ thể, MỖI Ý CÁCH NHAU BẰNG \\n\\n",
-  "ninetyDayPlan": "kế hoạch phát triển 90 ngày chia 3 giai đoạn (Ngày 1-30, 31-60, 61-90), MỖI GIAI ĐOẠN chia nhỏ thành 2-3 mốc tuần cụ thể kèm hành động + lý do + cách tự kiểm tra, MỖI GIAI ĐOẠN CÁCH NHAU BẰNG \\n\\n"
+  "ninetyDayPlan": [
+    {
+      "stageLabel": "Giai đoạn 1: Ngày 1-30 - [tên chủ đề ngắn gọn]",
+      "weeks": [
+        { "weekLabel": "Tuần 1-2", "actions": ["hành động 1", "hành động 2", "hành động 3"] },
+        { "weekLabel": "Tuần 3-4", "actions": ["hành động 1", "hành động 2", "hành động 3"] }
+      ]
+    },
+    { "stageLabel": "Giai đoạn 2: Ngày 31-60 - [tên chủ đề ngắn gọn]", "weeks": [ ... ] },
+    { "stageLabel": "Giai đoạn 3: Ngày 61-90 - [tên chủ đề ngắn gọn]", "weeks": [ ... ] }
+  ]
 }`;
 
   const requestConfig = {
@@ -133,7 +152,32 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
           suitableCareers: { type: Type.STRING, description: "3 nghề phù hợp, mỗi nghề 2-3 câu giải thích rõ lý do" },
           idealEnvironment: { type: Type.STRING, description: "Môi trường làm việc lý tưởng, 4-5 câu cụ thể" },
           commonMistakes: { type: Type.STRING, description: "2-3 sai lầm dễ mắc phải, mỗi sai lầm 2-3 câu kèm ví dụ" },
-          ninetyDayPlan: { type: Type.STRING, description: "Kế hoạch 90 ngày chi tiết theo tuần, 3 giai đoạn 30 ngày, mỗi mốc tuần liệt kê đúng 3 hành động cụ thể (a)(b)(c) cần làm" },
+          ninetyDayPlan: {
+            type: Type.ARRAY,
+            description: "3 giai đoạn phát triển 90 ngày",
+            items: {
+              type: Type.OBJECT,
+              properties: {
+                stageLabel: { type: Type.STRING, description: "VD: 'Giai đoạn 1: Ngày 1-30 - Nhận diện điểm mù'" },
+                weeks: {
+                  type: Type.ARRAY,
+                  items: {
+                    type: Type.OBJECT,
+                    properties: {
+                      weekLabel: { type: Type.STRING, description: "VD: 'Tuần 1-2'" },
+                      actions: {
+                        type: Type.ARRAY,
+                        description: "Đúng 3 hành động cụ thể",
+                        items: { type: Type.STRING },
+                      },
+                    },
+                    required: ["weekLabel", "actions"],
+                  },
+                },
+              },
+              required: ["stageLabel", "weeks"],
+            },
+          },
         },
         required: [
           "summary", "topStrengths", "blindSpots", "suitableCareers",
@@ -181,6 +225,16 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
     const stripRawScores = (text: string) =>
       text.replace(/\(?[-]?\d+\.\d{1,3}\)?/g, "").replace(/\s{2,}/g, " ").replace(/\s+([.,;:])/g, "$1").trim();
 
+    const cleanPlan: NinetyDayStage[] = Array.isArray(parsed.ninetyDayPlan)
+      ? parsed.ninetyDayPlan.map((stage) => ({
+          stageLabel: stripRawScores(stage.stageLabel ?? ""),
+          weeks: (stage.weeks ?? []).map((week) => ({
+            weekLabel: stripRawScores(week.weekLabel ?? ""),
+            actions: (week.actions ?? []).map((a) => stripRawScores(a)) as [string, string, string],
+          })),
+        }))
+      : [];
+
     return {
       summary: stripRawScores(parsed.summary ?? ""),
       topStrengths: stripRawScores(parsed.topStrengths ?? ""),
@@ -188,7 +242,7 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
       suitableCareers: stripRawScores(parsed.suitableCareers ?? ""),
       idealEnvironment: stripRawScores(parsed.idealEnvironment ?? ""),
       commonMistakes: stripRawScores(parsed.commonMistakes ?? ""),
-      ninetyDayPlan: stripRawScores(parsed.ninetyDayPlan ?? ""),
+      ninetyDayPlan: cleanPlan,
     };
   } catch {
     // In log để có thể xem trong Vercel > Logs nếu cần debug tiếp
@@ -203,7 +257,7 @@ Trả lời CHÍNH XÁC theo định dạng JSON sau, không thêm text nào kh�
       suitableCareers: "",
       idealEnvironment: "",
       commonMistakes: "",
-      ninetyDayPlan: "",
+      ninetyDayPlan: [],
     };
   }
 }

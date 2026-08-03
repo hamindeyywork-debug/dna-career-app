@@ -11,32 +11,37 @@ interface QueueItem {
   created_at: string;
 }
 
-const SECTION_LABELS: Record<string, string> = {
+interface NinetyDayWeek {
+  weekLabel: string;
+  actions: string[];
+}
+interface NinetyDayStage {
+  stageLabel: string;
+  weeks: NinetyDayWeek[];
+}
+
+const TEXT_SECTION_LABELS: Record<string, string> = {
   summary: "Tóm tắt DNA",
   topStrengths: "3 điểm mạnh nhất",
   blindSpots: "Điểm mù",
   suitableCareers: "Nghề phù hợp",
   idealEnvironment: "Môi trường lý tưởng",
   commonMistakes: "Sai lầm dễ mắc",
-  ninetyDayPlan: "Kế hoạch 90 ngày phát triển sự nghiệp",
 };
+const NINETY_DAY_LABEL = "Kế hoạch 90 ngày phát triển sự nghiệp";
 
-const LIST_FIELDS = new Set(["topStrengths", "suitableCareers", "commonMistakes", "ninetyDayPlan"]);
+const LIST_FIELDS = new Set(["topStrengths", "suitableCareers", "commonMistakes"]);
 
 // Tự tách dòng trước mỗi mục đánh số (1. 2. 3...) và trước "Ví dụ:", phòng
 // trường hợp AI viết liền không xuống dòng dù đã được nhắc trong prompt.
+// (ninetyDayPlan không cần hàm này nữa — đã là dữ liệu có cấu trúc thật)
 function formatSection(key: string, text: string): string {
   if (!text) return text;
   let result = text;
   if (LIST_FIELDS.has(key)) {
     result = result.replace(/\s*(?=\d+\.\s)/g, "\n");
   }
-  result = result
-    .replace(/\s*(?=Ví dụ:)/g, "\n")
-    .replace(/\s*(?=\(b\)\s)/g, "\n")
-    .replace(/\s*(?=\(c\)\s)/g, "\n")
-    .replace(/\s*(?=Tuần\s*\d+\s*-\s*\d+\s*:)/gi, "\n\n")
-    .replace(/\s*(?=Giai đoạn\s*\d+\s*:)/gi, "\n\n");
+  result = result.replace(/\s*(?=Ví dụ:)/g, "\n");
   return result
     .split("\n")
     .map((line) => line.trim())
@@ -47,10 +52,24 @@ function formatSection(key: string, text: string): string {
 function buildPlainText(detail: any): string {
   const report = detail.report || {};
   const lines = [`DNA CAREER — ${detail.archetype_name} (${detail.code})`, ""];
-  for (const key of Object.keys(SECTION_LABELS)) {
+  for (const key of Object.keys(TEXT_SECTION_LABELS)) {
     if (report[key]) {
-      lines.push(`— ${SECTION_LABELS[key]} —`);
+      lines.push(`— ${TEXT_SECTION_LABELS[key]} —`);
       lines.push(formatSection(key, report[key]));
+      lines.push("");
+    }
+  }
+  const plan: NinetyDayStage[] = Array.isArray(report.ninetyDayPlan) ? report.ninetyDayPlan : [];
+  if (plan.length > 0) {
+    lines.push(`— ${NINETY_DAY_LABEL} —`);
+    for (const stage of plan) {
+      lines.push(stage.stageLabel);
+      for (const week of stage.weeks ?? []) {
+        lines.push(`  ${week.weekLabel}:`);
+        for (const action of week.actions ?? []) {
+          lines.push(`  - ${action}`);
+        }
+      }
       lines.push("");
     }
   }
@@ -81,7 +100,6 @@ export default function AdminPage() {
   async function lookup(rawCode: string) {
     setDetail(null);
     setCopied(false);
-    // Khoan dung: bỏ khoảng trắng thừa, bỏ tiền tố "DNA " lặp nếu người dùng gõ tay
     const code = rawCode.trim().replace(/^DNA\s+(?=DNA-)/i, "");
     const res = await fetch(`/api/report/${code}`, { headers: { "x-admin-secret": secret } });
     if (!res.ok) {
@@ -127,6 +145,10 @@ export default function AdminPage() {
     );
   }
 
+  const ninetyDayPlan: NinetyDayStage[] = Array.isArray(detail?.report?.ninetyDayPlan)
+    ? detail.report.ninetyDayPlan
+    : [];
+
   return (
     <main className="min-h-screen px-6 py-10 max-w-3xl mx-auto">
       <h1 className="font-display font-semibold text-xl mb-6">Admin — Hàng chờ gửi report ({queue.length})</h1>
@@ -166,8 +188,9 @@ export default function AdminPage() {
             Liên hệ: {detail.contact_channel} · {detail.contact_value ?? "chưa có"}
           </p>
 
+          {/* Các mục dạng văn bản thường */}
           <div className="space-y-4">
-            {Object.entries(SECTION_LABELS).map(([key, label]) => {
+            {Object.entries(TEXT_SECTION_LABELS).map(([key, label]) => {
               const content = detail.report?.[key];
               if (!content) return null;
               const lines = formatSection(key, content).split("\n");
@@ -178,18 +201,12 @@ export default function AdminPage() {
                     {lines.map((line, i) => {
                       const isExample = line.startsWith("Ví dụ:");
                       const isNumbered = /^\d+\.\s/.test(line);
-                      const isStage = /^Giai đoạn\s*\d+\s*:/i.test(line);
-                      const isWeek = /^Tuần\s*\d+\s*-\s*\d+\s*:/i.test(line);
                       return (
                         <p
                           key={i}
                           className={
                             isExample
                               ? "italic text-ink/55 text-[13px] pl-3 border-l-2 border-line"
-                              : isStage
-                              ? "font-semibold text-ink pt-3 first:pt-0"
-                              : isWeek
-                              ? "font-medium text-ink/90 pt-1.5"
                               : isNumbered && i > 0
                               ? "pt-2"
                               : ""
@@ -204,6 +221,37 @@ export default function AdminPage() {
               );
             })}
           </div>
+
+          {/* Kế hoạch 90 ngày — render trực tiếp từ dữ liệu có cấu trúc, không cần đoán tách dòng */}
+          {ninetyDayPlan.length > 0 && (
+            <div className="border-t border-line pt-4 mt-4">
+              <p className="font-mono text-[11px] uppercase tracking-wide text-ink/35 mb-3">{NINETY_DAY_LABEL}</p>
+              <div className="space-y-5">
+                {ninetyDayPlan.map((stage, si) => (
+                  <div key={si}>
+                    <p className="font-semibold text-sm text-ink mb-2">{stage.stageLabel}</p>
+                    <div className="space-y-3 pl-3 border-l-2 border-line">
+                      {(stage.weeks ?? []).map((week, wi) => (
+                        <div key={wi}>
+                          <p className="font-medium text-sm text-ink/90 mb-1">{week.weekLabel}</p>
+                          <ul className="space-y-1">
+                            {(week.actions ?? []).map((action, ai) => (
+                              <li key={ai} className="text-sm text-ink/80 leading-relaxed flex gap-2">
+                                <span className="text-ink/35 flex-shrink-0">
+                                  {String.fromCharCode(97 + ai)}.
+                                </span>
+                                <span>{action}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {!detail.delivered ? (
             <button
